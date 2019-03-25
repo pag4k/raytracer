@@ -10,7 +10,7 @@ find_package(glm REQUIRED)
 find_package(X11 REQUIRED)
 
 
-set(SOURCE_FILES main.cpp Scene.cpp Camera.cpp Object.cpp Light.cpp Sphere.cpp Plane.cpp Ray.cpp)
+set(SOURCE_FILES main.cpp Scene.cpp Camera.cpp Object.cpp Light.cpp Sphere.cpp Plane.cpp Ray.cpp Image.cpp Mesh.cpp Triangle.cpp Triangle.h)
 
 add_executable(comp371raytracer ${SOURCE_FILES})
 

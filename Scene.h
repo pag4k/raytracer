@@ -23,6 +23,7 @@ class Scene {
     void GetPlane(std::ifstream &inputStream);
     void GetSphere(std::ifstream &inputStream);
     void GetLight(std::ifstream &inputStream);
+    void GetMesh(std::ifstream &inputStream);
 
     int objectCount;
     Camera camera;

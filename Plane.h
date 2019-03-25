@@ -10,6 +10,7 @@ class Plane : public Object {
           float ay, float az, float dx, float dy, float dz, float sx, float sy,
           float sz, float s);
     float GetIntersection(const Ray &ray) const override;
+    glm::vec3 GetNormal(const Ray &ray, float distance) const override;
 
   private:
     glm::vec3 normal;   // Normal of the place
