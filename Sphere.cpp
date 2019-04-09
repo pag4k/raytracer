@@ -5,7 +5,7 @@
 #include "Sphere.h"
 #include "Ray.h"
 
-#include <iostream>
+//#include <iostream>
 
 Sphere::Sphere(float px, float py, float pz, int rad, float ax, float ay,
                float az, float dx, float dy, float dz, float sx, float sy,
@@ -15,7 +15,7 @@ Sphere::Sphere(float px, float py, float pz, int rad, float ax, float ay,
 
 float Sphere::GetIntersection(const Ray &ray) const {
     const glm::vec3 &p0 = ray.GetOrigin();
-    const glm::vec3 &pd = ray.GetDirection();
+    const glm::vec3 &pd = ray.GetDir();
     float dx = p0.x - position.x;
     float dy = p0.y - position.y;
     float dz = p0.z - position.z;

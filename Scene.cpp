@@ -1,7 +1,4 @@
 
-
-#define GLM_ENABLE_EXPERIMENTAL
-
 #include "Scene.h"
 #include <cassert>
 #include <glm/gtx/string_cast.hpp>
@@ -18,121 +15,25 @@
 #include "Sphere.h"
 #include "Triangle.h"
 
-Scene::Scene(const std::string &filename) {
-    GenerateScene(filename);
-    auto dimensions = camera.GetDimensions();
-    const float maxHeight = dimensions.first;
-    const float maxWidth = dimensions.second;
+using namespace glm;
 
-    std::cout << "Number of objects: " << objects.size() << std::endl;
-
-    const int h = static_cast<int>(maxHeight); // 300;
-    const int w = static_cast<int>(
-        maxWidth); // static_cast<int>(camera.GetAspectRatio() * h);
-
-    const int pixelCount = (2 * h + 1) * (2 * w + 1);
-    std::cout << "Number of pixels: " << pixelCount << std::endl;
-    auto *pixels = new unsigned char[3 * pixelCount];
-
-    for (int y = -h; y <= h; ++y) {
-        for (int x = -w; x <= w; ++x) {
-            //            int wx = static_cast<int>(glm::round(maxWidth / w *
-            //            x)); int wy = static_cast<int>(glm::round(maxHeight /
-            //            h * y));
-            int pixelIndex = 3 * ((h - y) * (2 * w + 1) + x + w);
-            const Ray ray = camera.CreateRay(x, y);
-            int minObject = -1;
-            float minDistance = std::numeric_limits<float>::max();
-            for (int i = 0; i < objects.size(); ++i) {
-                float distance = objects[i]->GetIntersection(ray);
-                if (0 < distance && distance < minDistance) {
-                    minObject = i;
-                    minDistance = distance;
-                }
-            }
-            if (minObject != -1) {
-                glm::vec3 normal = glm::normalize(
-                    objects[minObject]->GetNormal(ray, minDistance));
-                glm::vec3 objectDiffuseColor =
-                    objects[minObject]->GetDiffuseColor();
-                glm::vec3 objectSpecularColor =
-                    objects[minObject]->GetSpecularColor();
-                float objectShininess = objects[minObject]->GetShininess();
-                glm::vec3 color(0);
-                for (auto light : lights) {
-                    const Ray shadowRay =
-                        light.CreateRay(ray.GetPoint(minDistance - 0.01f));
-                    bool unblocked = true;
-                    for (auto object : objects) {
-                        float distance = object->GetIntersection(shadowRay);
-                        if (0 < distance) {
-                            unblocked = false;
-                            break;
-                        }
-                    }
-
-                    if (unblocked) {
-                        glm::vec3 viewDirection = -ray.GetDirection();
-                        glm::vec3 lightDirection = shadowRay.GetDirection();
-                        glm::vec3 reflectionDirection = glm::normalize(
-                            2 * glm::dot(lightDirection, normal) * normal -
-                            lightDirection);
-
-                        glm::vec3 diffuseColor =
-                            light.GetDiffuseColor() * objectDiffuseColor *
-                            glm::clamp(glm::dot(lightDirection, normal), 0.f,
-                                       1.f);
-                        glm::vec3 specularColor =
-                            light.GetSpecularColor() * objectSpecularColor *
-                            glm::pow(glm::clamp(glm::dot(reflectionDirection,
-                                                         viewDirection),
-                                                0.f, 1.f),
-                                     objectShininess);
-                        color += diffuseColor + specularColor;
-                    }
-                }
-                color += objects[minObject]->GetAmbientColor();
-
-                color = glm::clamp(color, glm::vec3(0), glm::vec3(1));
-
-                pixels[0 + pixelIndex] =
-                    static_cast<unsigned char>(color.x * 255);
-                pixels[1 + pixelIndex] =
-                    static_cast<unsigned char>(color.y * 255);
-                pixels[2 + pixelIndex] =
-                    static_cast<unsigned char>(color.z * 255);
-            }
-        }
-    }
-
-    Image::ViewBMP("Render.bmp", w, h, pixels);
-    delete[] pixels;
-}
-
-Scene::~Scene() {
-    for (auto *object : objects) {
-        delete object;
-    }
-}
-
-void Scene::GenerateScene(const std::string &filename) {
+Scene::Scene(const std::string &filename) : filename(filename) {
+    std::cout << "Parsing scene: " << filename << ".txt" << std::endl;
     std::ifstream inputStream;
-    inputStream.open(filename);
+    inputStream.open(filename + ".txt");
 
     if (inputStream.fail()) {
-        std::cout << "Could not open scene file: " << filename << "."
+        std::cout << "Could not open scene file: " << filename << ".txt."
                   << std::endl;
         return;
     }
-
     // Get first number which contain the number of objects.
+    int objectCount;
     inputStream >> objectCount;
-    // std::cout << objectCount << std::endl;
 
     for (int i = 0; i < objectCount; ++i) {
         std::string type;
         inputStream >> type;
-        // std::cout << type;
         if (type == "camera") {
             GetCamera(inputStream);
         } else if (type == "plane") {
@@ -147,7 +48,90 @@ void Scene::GenerateScene(const std::string &filename) {
             std::cout << "Bad input." << std::endl;
         }
     }
-};
+}
+
+Scene::~Scene() {
+    delete camera;
+    for (auto *object : objects) {
+        delete object;
+    }
+}
+
+void Scene::Render() {
+    const auto dimensions = camera->GetDimensions();
+    const int h = static_cast<int>(dimensions.first);
+    const int w = static_cast<int>(dimensions.second);
+    const int pixelCount = (2 * h) * (2 * w);
+
+    std::cout << "Width: " << (2 * w) << " Height: " << (2 * h);
+    std::cout << " Number of pixels: " << pixelCount;
+    std::cout << " Number of objects: " << objects.size();
+    std::cout << " Number of lights: " << lights.size() << std::endl;
+
+    auto *const pixels = new unsigned char[3 * pixelCount];
+
+    for (int y = -h; y < h; ++y) {
+        for (int x = -w; x < w; ++x) {
+            const int pixelIndex = 3 * ((h - 1 - y) * (2 * w) + x + w);
+            const Ray ray = camera->CreateRay(x, y);
+            int minObj = -1;
+            float minDistance = std::numeric_limits<float>::max();
+            for (int i = 0; i < objects.size(); ++i) {
+                const float distance = objects[i]->GetIntersection(ray);
+                if (0 < distance && distance < minDistance) {
+                    minObj = i;
+                    minDistance = distance;
+                }
+            }
+            vec3 color(0);
+            if (minObj != -1) {
+                const vec3 normal =
+                    normalize(objects[minObj]->GetNormal(ray, minDistance));
+                const vec3 objDiffColor = objects[minObj]->GetDiffColor();
+                const vec3 objSpecColor = objects[minObj]->GetSpecColor();
+                const float objShininess = objects[minObj]->GetShininess();
+                for (auto light : lights) {
+                    const Ray shadowRay =
+                        light.CreateRay(ray.GetPoint(minDistance - 0.01f));
+                    bool unblocked = true;
+                    for (auto obj : objects) {
+                        float distance = obj->GetIntersection(shadowRay);
+                        if (0 < distance) {
+                            unblocked = false;
+                            break;
+                        }
+                    }
+
+                    if (unblocked) {
+                        const vec3 viewDir = -ray.GetDir();
+                        const vec3 lightDir = shadowRay.GetDir();
+                        const vec3 reflDir = normalize(
+                            2 * dot(lightDir, normal) * normal - lightDir);
+
+                        const vec3 diffColor =
+                            light.GetDiffColor() * objDiffColor *
+                            clamp(dot(lightDir, normal), 0.f, 1.f);
+                        const vec3 specColor =
+                            light.GetSpecColor() * objSpecColor *
+                            pow(clamp(dot(reflDir, viewDir), 0.f, 1.f),
+                                objShininess);
+                        color += diffColor + specColor;
+                    }
+                }
+                color += objects[minObj]->GetAmbtColor();
+
+                color = clamp(color, vec3(0), vec3(1));
+            }
+            pixels[0 + pixelIndex] = static_cast<unsigned char>(color.x * 255);
+            pixels[1 + pixelIndex] = static_cast<unsigned char>(color.y * 255);
+            pixels[2 + pixelIndex] = static_cast<unsigned char>(color.z * 255);
+        }
+    }
+
+    std::cout << "Generating: " << filename << ".bmp" << std::endl;
+    Image::ViewBMP(filename + ".bmp", w, h, pixels);
+    delete[] pixels;
+}
 
 void Scene::GetCamera(std::ifstream &inputStream) {
     // Get position.
@@ -166,7 +150,7 @@ void Scene::GetCamera(std::ifstream &inputStream) {
     float a;
     inputStream.ignore(8, ' ');
     inputStream >> a;
-    camera = Camera(px, py, pz, fov, f, a);
+    camera = new Camera(px, py, pz, fov, f, a);
 }
 
 void Scene::GetPlane(std::ifstream &inputStream) {
@@ -288,7 +272,7 @@ void Scene::GetMesh(std::ifstream &inputStream) {
     //    }
     //    objectFileStream >> input;
     //
-    //    std::vector<glm::vec3> vertices;
+    //    std::vector<vec3> vertices;
     //    while (input == "v") {
     //        float px, py, pz;
     //        objectFileStream >> px >> py >> pz;
@@ -300,22 +284,22 @@ void Scene::GetMesh(std::ifstream &inputStream) {
     //    std::cout << vertices.size();
 
     std::vector<unsigned int> indices;
-    std::vector<glm::vec3> vertices;
+    std::vector<vec3> vertices;
     std::vector<unsigned int> normalIndices;
-    std::vector<glm::vec3> normals;
-    std::vector<glm::vec2> UVs;
+    std::vector<vec3> normals;
+    std::vector<vec2> UVs;
     loadOBJ(objectFilename.c_str(), indices, vertices, normalIndices, normals,
             UVs);
 
-    std::cout << indices.size() << " " << vertices.size() << " "
-              << normals.size() << std::endl;
+    //    std::cout << indices.size() << " " << vertices.size() << " "
+    //              << normals.size() << std::endl;
 
     std::vector<Triangle> triangles;
     for (int i = 0; i < indices.size(); i += 3) {
-        //        std::cout << glm::to_string(normals[normalIndices[i + 0]]) <<
-        //        std::endl; std::cout << glm::to_string(normals[normalIndices[i
+        //        std::cout << to_string(normals[normalIndices[i + 0]]) <<
+        //        std::endl; std::cout << to_string(normals[normalIndices[i
         //        + 1]]) << std::endl; std::cout <<
-        //        glm::to_string(normals[normalIndices[i + 2]]) << std::endl;
+        //        to_string(normals[normalIndices[i + 2]]) << std::endl;
 
         triangles.emplace_back(
             vertices[indices[i + 0]], vertices[indices[i + 1]],

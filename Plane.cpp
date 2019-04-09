@@ -9,7 +9,7 @@ Plane::Plane(float nx, float ny, float nz, float px, float py, float pz,
       Object(ax, ay, az, dx, dy, dz, sx, sy, sz, s) {}
 
 float Plane::GetIntersection(const Ray &ray) const {
-    float denominator = glm::dot(ray.GetDirection(), normal);
+    float denominator = glm::dot(ray.GetDir(), normal);
 
     // FIXME: Need some epsilon value.
     if (glm::abs(denominator) < 0.0001) {

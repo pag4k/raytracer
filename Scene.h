@@ -16,17 +16,17 @@ class Scene {
   public:
     explicit Scene(const std::string &filename);
     ~Scene();
+    void Render();
 
   private:
-    void GenerateScene(const std::string &filename);
     void GetCamera(std::ifstream &inputStream);
     void GetPlane(std::ifstream &inputStream);
     void GetSphere(std::ifstream &inputStream);
     void GetLight(std::ifstream &inputStream);
     void GetMesh(std::ifstream &inputStream);
 
-    int objectCount;
-    Camera camera;
+    std::string filename;
+    Camera *camera = nullptr;
     // MESH!
     std::vector<Light> lights;
     std::vector<Object *> objects;

@@ -11,8 +11,8 @@ class Light {
           float dy, float dz, float sx, float sy, float sz);
     //    const glm::vec3 &GetPosition() const { return position; }
     // const glm::vec3 &GetAmbientColor() const { return ambientColor; }
-    const glm::vec3 &GetDiffuseColor() const { return diffuseColor; }
-    const glm::vec3 &GetSpecularColor() const { return specularColor; }
+    const glm::vec3 &GetDiffColor() const { return diffuseColor; }
+    const glm::vec3 &GetSpecColor() const { return specularColor; }
     Ray CreateRay(const glm::vec3 &origin);
 
   private:

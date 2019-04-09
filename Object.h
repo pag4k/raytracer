@@ -14,9 +14,9 @@ class Object {
     virtual ~Object() = default;
     virtual float GetIntersection(const Ray &ray) const = 0;
     virtual glm::vec3 GetNormal(const Ray &ray, float distance) const = 0;
-    const glm::vec3 &GetAmbientColor() const { return ambientColor; }
-    const glm::vec3 &GetDiffuseColor() const { return diffuseColor; }
-    const glm::vec3 &GetSpecularColor() const { return specularColor; }
+    const glm::vec3 &GetAmbtColor() const { return ambientColor; }
+    const glm::vec3 &GetDiffColor() const { return diffuseColor; }
+    const glm::vec3 &GetSpecColor() const { return specularColor; }
     float GetShininess() const { return shininess; };
 
   private:

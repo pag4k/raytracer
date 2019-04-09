@@ -1,9 +1,7 @@
 
-#define GLM_ENABLE_EXPERIMENTAL
-
 #include <cassert>
 #include <glm/gtx/string_cast.hpp>
-#include <iostream>
+//#include <iostream>
 
 #include "Plane.h"
 #include "Ray.h"
@@ -31,7 +29,7 @@ Triangle::Triangle(glm::vec3 vertexPosition1, glm::vec3 vertexPosition2,
 }
 
 float Triangle::GetIntersection(const Ray &ray) const {
-    float denominator = glm::dot(ray.GetDirection(), normal);
+    float denominator = glm::dot(ray.GetDir(), normal);
     // FIXME: Need some epsilon value.
     if (glm::abs(denominator) < 0.0001) {
         return -1;

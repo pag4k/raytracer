@@ -6,6 +6,7 @@ Mesh::Mesh(const std::vector<Triangle> &triangleVector, float ax, float ay,
            float s)
     : triangleCount(static_cast<int>(triangleVector.size())),
       Object(ax, ay, az, dx, dy, dz, sx, sy, sz, s) {
+
     triangles = new Triangle[triangleCount];
     std::copy(triangleVector.begin(), triangleVector.end(), triangles);
 }
