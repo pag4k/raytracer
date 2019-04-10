@@ -11,12 +11,12 @@ Plane::Plane(float nx, float ny, float nz, float px, float py, float pz,
 float Plane::GetIntersection(const Ray &ray) const {
     float denominator = glm::dot(ray.GetDir(), normal);
 
-    // FIXME: Need some epsilon value.
-    if (glm::abs(denominator) < 0.0001) {
+    // Back-face culling.
+    if (denominator > 0) {
+        return -1;
+    } else if (glm::abs(denominator) < 0.0001) {
         return -1;
     } else {
-        // Back-facing are not considered since the return value will be
-        // negative in th case.
         return glm::dot(position - ray.GetOrigin(), normal) / denominator;
     }
 }

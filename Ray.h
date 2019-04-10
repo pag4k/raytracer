@@ -12,8 +12,8 @@ class Ray {
     const glm::vec3 GetPoint(float t) const { return origin + t * direction; }
 
   private:
-    glm::vec3 origin;
-    glm::vec3 direction;
+    glm::vec3 origin;    // Origin or ray.
+    glm::vec3 direction; // Normalized direction of ray.
 };
 
 #endif // RAY_H

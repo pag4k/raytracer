@@ -1,13 +1,14 @@
 
 #include "Scene.h"
 #include <cassert>
-#include <glm/gtx/string_cast.hpp>
+//#include <glm/gtx/string_cast.hpp>
 
 #include <fstream>
 #include <iostream>
 
 #include "IndexObjLoader.h"
 
+#include "Camera.h"
 #include "Image.h"
 #include "Mesh.h"
 #include "Plane.h"
@@ -17,7 +18,7 @@
 
 using namespace glm;
 
-Scene::Scene(const std::string &filename) : filename(filename) {
+Scene::Scene(const std::string &filename) {
     std::cout << "Parsing scene: " << filename << ".txt" << std::endl;
     std::ifstream inputStream;
     inputStream.open(filename + ".txt");
@@ -57,7 +58,7 @@ Scene::~Scene() {
     }
 }
 
-void Scene::Render() {
+void Scene::Render(const std::string &filename) {
     const auto dimensions = camera->GetDimensions();
     const int h = static_cast<int>(dimensions.first);
     const int w = static_cast<int>(dimensions.second);
@@ -70,12 +71,15 @@ void Scene::Render() {
 
     auto *const pixels = new unsigned char[3 * pixelCount];
 
+    // Iterate over all pixels.
     for (int y = -h; y < h; ++y) {
         for (int x = -w; x < w; ++x) {
-            const int pixelIndex = 3 * ((h - 1 - y) * (2 * w) + x + w);
+            // Send ray.
             const Ray ray = camera->CreateRay(x, y);
+            // Set initial closest object index and minimum distance.
             int minObj = -1;
             float minDistance = std::numeric_limits<float>::max();
+            // Find closest interestion.
             for (int i = 0; i < objects.size(); ++i) {
                 const float distance = objects[i]->GetIntersection(ray);
                 if (0 < distance && distance < minDistance) {
@@ -83,16 +87,24 @@ void Scene::Render() {
                     minDistance = distance;
                 }
             }
+            // Set default color to black.
             vec3 color(0);
+            // If there was a collision...
             if (minObj != -1) {
+                // Get normal at intersection.
                 const vec3 normal =
                     normalize(objects[minObj]->GetNormal(ray, minDistance));
+                // Get colors needed for Phong illumination.
                 const vec3 objDiffColor = objects[minObj]->GetDiffColor();
                 const vec3 objSpecColor = objects[minObj]->GetSpecColor();
                 const float objShininess = objects[minObj]->GetShininess();
+
+                // For each light...
                 for (auto light : lights) {
+                    // Send a shadow ray.
                     const Ray shadowRay =
-                        light.CreateRay(ray.GetPoint(minDistance - 0.01f));
+                        light.CreateRay(ray.GetPoint(minDistance - 0.0001f));
+                    // Check if it is blocked
                     bool unblocked = true;
                     for (auto obj : objects) {
                         float distance = obj->GetIntersection(shadowRay);
@@ -101,11 +113,11 @@ void Scene::Render() {
                             break;
                         }
                     }
-
+                    // If not blocked, compute color.
                     if (unblocked) {
                         const vec3 viewDir = -ray.GetDir();
                         const vec3 lightDir = shadowRay.GetDir();
-                        const vec3 reflDir = normalize(
+                        const vec3 refDir = normalize(
                             2 * dot(lightDir, normal) * normal - lightDir);
 
                         const vec3 diffColor =
@@ -113,15 +125,17 @@ void Scene::Render() {
                             clamp(dot(lightDir, normal), 0.f, 1.f);
                         const vec3 specColor =
                             light.GetSpecColor() * objSpecColor *
-                            pow(clamp(dot(reflDir, viewDir), 0.f, 1.f),
+                            pow(clamp(dot(refDir, viewDir), 0.f, 1.f),
                                 objShininess);
                         color += diffColor + specColor;
                     }
                 }
-                color += objects[minObj]->GetAmbtColor();
-
+                // Add ambient object color and clamp.
+                color += objects[minObj]->GetAmbColor();
                 color = clamp(color, vec3(0), vec3(1));
             }
+            // Put color into main array.
+            const int pixelIndex = 3 * ((h - 1 - y) * (2 * w) + x + w);
             pixels[0 + pixelIndex] = static_cast<unsigned char>(color.x * 255);
             pixels[1 + pixelIndex] = static_cast<unsigned char>(color.y * 255);
             pixels[2 + pixelIndex] = static_cast<unsigned char>(color.z * 255);
@@ -129,7 +143,7 @@ void Scene::Render() {
     }
 
     std::cout << "Generating: " << filename << ".bmp" << std::endl;
-    Image::ViewBMP(filename + ".bmp", w, h, pixels);
+    Image::SaveBMP(filename + ".bmp", w, h, pixels);
     delete[] pixels;
 }
 
@@ -264,24 +278,6 @@ void Scene::GetMesh(std::ifstream &inputStream) {
                   << std::endl;
         return;
     }
-
-    //    std::string input;
-    //    objectFileStream >> input;
-    //    while (input != "default") {
-    //        objectFileStream >> input;
-    //    }
-    //    objectFileStream >> input;
-    //
-    //    std::vector<vec3> vertices;
-    //    while (input == "v") {
-    //        float px, py, pz;
-    //        objectFileStream >> px >> py >> pz;
-    //        vertices.emplace_back(px, py, pz);
-    //        objectFileStream >> input;
-    //    }
-    //    assert(vertices.size() > 2);
-    //
-    //    std::cout << vertices.size();
 
     std::vector<unsigned int> indices;
     std::vector<vec3> vertices;

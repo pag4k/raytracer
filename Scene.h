@@ -5,18 +5,16 @@
 #include <string>
 #include <vector>
 
-#include "Camera.h"
 #include "Light.h"
-#include "Object.h"
 
-#include "Plane.h"
-#include "Sphere.h"
+class Camera;
+class Object;
 
 class Scene {
   public:
     explicit Scene(const std::string &filename);
     ~Scene();
-    void Render();
+    void Render(const std::string &filename);
 
   private:
     void GetCamera(std::ifstream &inputStream);
@@ -25,15 +23,9 @@ class Scene {
     void GetLight(std::ifstream &inputStream);
     void GetMesh(std::ifstream &inputStream);
 
-    std::string filename;
-    Camera *camera = nullptr;
-    // MESH!
-    std::vector<Light> lights;
-    std::vector<Object *> objects;
-    // std::vector<Plane> planes;
-    // std::vector<Sphere> spheres;
-
-    // std::vector<float> pixels;
+    Camera *camera = nullptr;      // Pointer to only camera
+    std::vector<Light> lights;     // All lights.
+    std::vector<Object *> objects; // All objects: planes, spheres, meshes...
 };
 
 #endif // SCENE_H

@@ -7,7 +7,7 @@
 
 class Image {
   public:
-    static void ViewBMP(const std::string &filename, int w, int h,
+    static void SaveBMP(const std::string &filename, int w, int h,
                         const unsigned char *pixels);
 };
 

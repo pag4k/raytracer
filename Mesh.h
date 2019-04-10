@@ -21,9 +21,9 @@ class Mesh : public Object {
     glm::vec3 GetNormal(const Ray &ray, float distance) const override;
 
   private:
-    Triangle *triangles;
-    int triangleCount;
-    mutable int triangleIndex = -1;
+    Triangle *triangles;            // Pointer to array of triangles.
+    int triangleCount;              // Number of triangles.
+    mutable int triangleIndex = -1; // The index of the intersected triangle.
 };
 
 #endif // MESH_H

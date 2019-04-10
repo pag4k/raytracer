@@ -1,11 +1,6 @@
-//
-// Created by oscar on 23/03/19.
-//
 
 #include "Sphere.h"
 #include "Ray.h"
-
-//#include <iostream>
 
 Sphere::Sphere(float px, float py, float pz, int rad, float ax, float ay,
                float az, float dx, float dy, float dz, float sx, float sy,
@@ -20,7 +15,7 @@ float Sphere::GetIntersection(const Ray &ray) const {
     float dy = p0.y - position.y;
     float dz = p0.z - position.z;
 
-    // Check if back-facing.
+    // Back-face culling if inside the sphere.
     if (dx * dx + dy * dy + dz * dz <= radius * radius) {
         return -1;
     }

@@ -3,7 +3,7 @@
 
 #include "CImg.h"
 
-void Image::ViewBMP(const std::string &filename, int w, int h,
+void Image::SaveBMP(const std::string &filename, int w, int h,
                     const unsigned char *pixels) {
     // Creates an image with three channels and sets it to black
     cimg_library::CImg<float> image((2 * w), (2 * h), 1, 3, 0);
@@ -16,11 +16,6 @@ void Image::ViewBMP(const std::string &filename, int w, int h,
     }
 
     // Save out the image in BMP format.Pixel values must be in the range
-    // [0,255] delete pixels;
+    // [0,255]
     image.save(filename.c_str());
-    // Display the rendered image on screen
-    //    cimg_library::CImgDisplay main_disp(image, "Render");
-    //    while (!main_disp.is_closed()) {
-    //        main_disp.wait();
-    //    }
 }
