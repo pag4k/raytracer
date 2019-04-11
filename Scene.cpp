@@ -283,12 +283,9 @@ void Scene::GetMesh(std::ifstream &inputStream) {
 
     std::vector<unsigned int> indices;
     std::vector<vec3> vertices;
-    //    std::vector<unsigned int> normalIndices;
     std::vector<vec3> normals;
     std::vector<vec2> UVs;
-    //    loadOBJ(objectFilename.c_str(), indices, vertices, normals,
-    //    normalIndices,
-    //            UVs);
+
     loadOBJ(objectFilename.c_str(), indices, vertices, normals, UVs);
 
     std::vector<Triangle> triangles;
@@ -296,9 +293,6 @@ void Scene::GetMesh(std::ifstream &inputStream) {
         triangles.emplace_back(vertices[indices[i + 0]],
                                vertices[indices[i + 1]],
                                vertices[indices[i + 2]]);
-        //        , normals[normalIndices[i + 0]],
-        //            normals[normalIndices[i + 1]], normals[normalIndices[i +
-        //            2]]);
     }
 
     objects.push_back(

@@ -6,16 +6,10 @@
 
 int main() {
 
+    // Files to render.
     std::string files[] = {
         "scene1", "scene2",      "scene3",      "scene4",
         "scene5", "mesh_scene1", "mesh_scene2",
-        //                           "evaluate_scene1",
-        //                           "evaluate_scene2", "evaluate_scene3",
-        //                           "evaluate_scene4",
-        //                           "evaluate_scene5",
-        //                           "evaluate_scene6"
-        //                           "scene1b", "scene2b", "scene3b", "scene4b",
-        //                           "scene5b", "scene6b", "scene7b"
     };
 
     double totalTime = 0;
