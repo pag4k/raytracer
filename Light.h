@@ -9,6 +9,7 @@ class Light {
   public:
     Light(float px, float py, float pz, float ax, float ay, float az, float dx,
           float dy, float dz, float sx, float sy, float sz);
+    const glm::vec3 &GetPos() const { return position; }
     const glm::vec3 &GetDiffColor() const { return diffuseColor; }
     const glm::vec3 &GetSpecColor() const { return specularColor; }
     Ray CreateRay(const glm::vec3 &origin);

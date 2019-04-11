@@ -7,8 +7,8 @@ Camera::Camera(int px, int py, int pz, float fov, int f, float a)
       focal_length(f), aspect_ratio(a) {}
 
 std::pair<float, float> Camera::GetDimensions() {
-    float h = glm::abs(focal_length * glm::tan(fov / 2));
-    float w = aspect_ratio * h;
+    const float h = glm::abs(focal_length * glm::tan(fov / 2));
+    const float w = aspect_ratio * h;
     return std::pair(h, w);
 }
 

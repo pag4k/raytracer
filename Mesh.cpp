@@ -1,5 +1,6 @@
 
 #include "Mesh.h"
+#include "Common.h"
 
 Mesh::Mesh(const std::vector<Triangle> &triangleVector, float ax, float ay,
            float az, float dx, float dy, float dz, float sx, float sy, float sz,
@@ -18,7 +19,7 @@ float Mesh::GetIntersection(const Ray &ray) const {
     float minDistance = std::numeric_limits<float>::max();
     for (int i = 0; i < triangleCount; ++i) {
         float distance = triangles[i].GetIntersection(ray);
-        if (0 < distance && distance < minDistance) {
+        if (EPSILON < distance && distance < minDistance) {
             closestObject = i;
             minDistance = distance;
         }
@@ -31,5 +32,5 @@ float Mesh::GetIntersection(const Ray &ray) const {
     }
 }
 glm::vec3 Mesh::GetNormal(const Ray &ray, float distance) const {
-    return triangles[triangleIndex].GetNormal(ray, distance);
+    return triangles[triangleIndex].GetNormal();
 }

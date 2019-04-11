@@ -11,7 +11,7 @@ class Camera {
   public:
     Camera() = default;
     Camera(int px, int py, int pz, float fov, int f, float a);
-    float GetAspectRatio() const { return aspect_ratio; };
+    float GetFocalLength() const { return focal_length; };
     std::pair<float, float> GetDimensions();
     Ray CreateRay(int x, int y);
 

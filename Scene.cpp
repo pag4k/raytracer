@@ -9,6 +9,7 @@
 #include "IndexObjLoader.h"
 
 #include "Camera.h"
+#include "Common.h"
 #include "Image.h"
 #include "Mesh.h"
 #include "Plane.h"
@@ -82,7 +83,7 @@ void Scene::Render(const std::string &filename) {
             // Find closest interestion.
             for (int i = 0; i < objects.size(); ++i) {
                 const float distance = objects[i]->GetIntersection(ray);
-                if (0 < distance && distance < minDistance) {
+                if (EPSILON < distance && distance < minDistance) {
                     minObj = i;
                     minDistance = distance;
                 }
@@ -91,6 +92,8 @@ void Scene::Render(const std::string &filename) {
             vec3 color(0);
             // If there was a collision...
             if (minObj != -1) {
+                const vec3 intersection =
+                    ray.GetPoint(minDistance - 1000.0 * EPSILON);
                 // Get normal at intersection.
                 const vec3 normal =
                     normalize(objects[minObj]->GetNormal(ray, minDistance));
@@ -102,13 +105,12 @@ void Scene::Render(const std::string &filename) {
                 // For each light...
                 for (auto light : lights) {
                     // Send a shadow ray.
-                    const Ray shadowRay =
-                        light.CreateRay(ray.GetPoint(minDistance - 0.0001f));
+                    const Ray shadowRay = light.CreateRay(intersection);
                     // Check if it is blocked
                     bool unblocked = true;
                     for (auto obj : objects) {
                         float distance = obj->GetIntersection(shadowRay);
-                        if (0 < distance) {
+                        if (distance > EPSILON) {
                             unblocked = false;
                             break;
                         }
@@ -281,26 +283,22 @@ void Scene::GetMesh(std::ifstream &inputStream) {
 
     std::vector<unsigned int> indices;
     std::vector<vec3> vertices;
-    std::vector<unsigned int> normalIndices;
+    //    std::vector<unsigned int> normalIndices;
     std::vector<vec3> normals;
     std::vector<vec2> UVs;
-    loadOBJ(objectFilename.c_str(), indices, vertices, normalIndices, normals,
-            UVs);
-
-    //    std::cout << indices.size() << " " << vertices.size() << " "
-    //              << normals.size() << std::endl;
+    //    loadOBJ(objectFilename.c_str(), indices, vertices, normals,
+    //    normalIndices,
+    //            UVs);
+    loadOBJ(objectFilename.c_str(), indices, vertices, normals, UVs);
 
     std::vector<Triangle> triangles;
     for (int i = 0; i < indices.size(); i += 3) {
-        //        std::cout << to_string(normals[normalIndices[i + 0]]) <<
-        //        std::endl; std::cout << to_string(normals[normalIndices[i
-        //        + 1]]) << std::endl; std::cout <<
-        //        to_string(normals[normalIndices[i + 2]]) << std::endl;
-
-        triangles.emplace_back(
-            vertices[indices[i + 0]], vertices[indices[i + 1]],
-            vertices[indices[i + 2]], normals[normalIndices[i + 0]],
-            normals[normalIndices[i + 1]], normals[normalIndices[i + 2]]);
+        triangles.emplace_back(vertices[indices[i + 0]],
+                               vertices[indices[i + 1]],
+                               vertices[indices[i + 2]]);
+        //        , normals[normalIndices[i + 0]],
+        //            normals[normalIndices[i + 1]], normals[normalIndices[i +
+        //            2]]);
     }
 
     objects.push_back(

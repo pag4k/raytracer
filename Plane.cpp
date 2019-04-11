@@ -1,5 +1,6 @@
 
 #include "Plane.h"
+#include "Common.h"
 #include "Ray.h"
 
 Plane::Plane(float nx, float ny, float nz, float px, float py, float pz,
@@ -9,12 +10,13 @@ Plane::Plane(float nx, float ny, float nz, float px, float py, float pz,
       Object(ax, ay, az, dx, dy, dz, sx, sy, sz, s) {}
 
 float Plane::GetIntersection(const Ray &ray) const {
-    float denominator = glm::dot(ray.GetDir(), normal);
+    const float denominator = glm::dot(ray.GetDir(), normal);
 
     // Back-face culling.
-    if (denominator > 0) {
+    if (denominator > EPSILON) {
         return -1;
-    } else if (glm::abs(denominator) < 0.0001) {
+        // Parallel plane
+    } else if (glm::abs(denominator) < EPSILON) {
         return -1;
     } else {
         return glm::dot(position - ray.GetOrigin(), normal) / denominator;

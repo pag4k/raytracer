@@ -10,10 +10,12 @@ class Triangle {
   public:
     Triangle() = default;
     Triangle(glm::vec3 vertexPosition1, glm::vec3 vertexPosition2,
-             glm::vec3 vertexPosition3, glm::vec3 vertexNormal1,
-             glm::vec3 vertexNormal2, glm::vec3 vertexNormal3);
+             glm::vec3 vertexPosition3
+             //             , glm::vec3 vertexNormal1,
+             //             glm::vec3 vertexNormal2, glm::vec3 vertexNormal3
+    );
     float GetIntersection(const Ray &ray) const;
-    glm::vec3 GetNormal(const Ray &ray, float distance) const;
+    glm::vec3 GetNormal() const;
 
   private:
     glm::vec3 vertexPositions[3]; // Triangle vertices.
